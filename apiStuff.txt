@@ -1,0 +1,28 @@
+Master: TCP
+Accepts connection
+Takes in 8 ports to be used for udp stuff
+Immediately sends 8 neighbor addresses and ports to be used (based on direction)
+Canonical order:
+1 2 3
+4   5
+6 7 8
+Also sends row and column
+
+Client: UDP
+Sets input state somehow (from user)
+Connects to master
+Sends 8 ports to be used (1 per direction)
+Get 8 neighbor addresses/ports
+close connection with master
+// Send each neighbor a direction (where we are in relation to them as a number 1-8)  <-- no longer necesssary
+Start simulating!
+neighbor can see our port and address from our udp packet when we send to them, they can update their neighbors if we are new
+
+Grid sending:
+grid is n by n
+Diagonal case - send 1 bit
+Nondiagonal case - send n bits (left to right or up to down)
+Both cases: append timestamp to message OR NOT
+
+What should our timeout be? based on tick window
+How long should our ticks be? .5-1 second for starters
