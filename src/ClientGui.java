@@ -7,6 +7,8 @@ public class ClientGui {
 	JFrame jf;
 	ClientPanel panel;
 	Client master;
+	private static final int JFRAME_X = 300;
+	private static final int JFRAME_Y = 300;
 
 	public ClientGui(Client ms) {
 		master = ms;
@@ -21,7 +23,7 @@ public class ClientGui {
 
 		panel = new ClientPanel();
 
-		final JButton button = new JButton("Connect & Start");
+		final JButton button = new JButton("Start");
 		button.addActionListener( new ActionListener() {
 			Thread rthread;
 			public void actionPerformed(ActionEvent ae) {
@@ -30,7 +32,7 @@ public class ClientGui {
 					try {
 						rthread.join();
 					} catch (InterruptedException iex) { }
-					button.setText("Connect & Start");
+					button.setText("Continue");
 				} else {
 					rthread = new Thread(master);
 					rthread.start();
@@ -41,7 +43,7 @@ public class ClientGui {
 
 		jf.getContentPane().add(panel, BorderLayout.CENTER);
 		jf.getContentPane().add(button, BorderLayout.SOUTH);
-		jf.setSize(600, 700);
+		jf.setSize(JFRAME_X, JFRAME_Y);
 		jf.setVisible(true);
 	}
 
@@ -70,20 +72,26 @@ public class ClientGui {
 
 		@Override
 		public void paintComponent(Graphics g) {
-			int graphSize = data.length;
-			float pixW = (float)this.getWidth() / (float)graphSize;
-			float pixH = (float)this.getHeight() / (float)graphSize;
+			float graphSize = (float)data.length;
+			float pixW = (float)this.getWidth() / graphSize;
+			float pixH = (float)this.getHeight() / graphSize;
 
-			for (int i = 0; i < graphSize; i++) {
-				for (int j = 0; j < graphSize; j++) {
-					if (data[i][j]) {
-						g.setColor(Color.BLACK);
-					} else {
-						g.setColor(Color.WHITE);
+			g.setColor(Color.WHITE);
+			g.fillRect(0, 0, this.getWidth(), this.getHeight());
+			g.setColor(Color.BLACK);
+
+			for (float i = 0; i < graphSize; i++) {
+				for (float j = 0; j < graphSize; j++) {
+					if (data[(int)i][(int)j]) {
+						g.fillRect((int)(pixW * j), (int)(pixH * i), 1 + (int)pixW, 1 + (int)pixH);
 					}
-
-					g.fillRect((int)pixW * j, (int)pixH * i, (int)pixW, (int)pixH);
 				}
+			}
+
+			g.setColor(Color.GRAY);
+			for (float i = 0; i < graphSize; i++) {
+				g.drawLine(0, (int)(pixH * i), this.getWidth(), (int)(pixH * i));
+				g.drawLine((int)(pixW * i), 0, (int)(pixW * i), this.getHeight());
 			}
 		}
 
@@ -99,7 +107,9 @@ public class ClientGui {
 			int nX = evX * data.length / this.getWidth();
 			int nY = evY * data.length / this.getHeight();
 
-			if (l_nX != nX || l_nY != nY)
+			if (l_nX != nX || l_nY != nY
+					&& nY >= 0 && nX >= 0
+					&& nY < data.length && nX < data[0].length)
 				data[nY][nX] = !data[nY][nX];
 			l_nX = nX;
 			l_nY = nY;

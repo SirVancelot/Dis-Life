@@ -12,8 +12,9 @@ import java.util.Arrays;
 
 public class Client implements Runnable {
 	
-	private static final int TIMEOUT = 100;
+	private static final int TIMEOUT = 1000;
 	private static final int BUF_SIZE = Grid.GRID_SIZE;
+	private boolean nogui = false;
 	private Grid grid = new Grid();
 
 	private ClientGui cgui;
@@ -29,7 +30,13 @@ public class Client implements Runnable {
 	}
 	
 	private void init(String[] args) throws UnknownHostException, IOException {
-		// grid.randomize();
+		if (args[0].equals("-n")) {
+			// no-gui mode
+			nogui = true;
+
+			for (int i = 1; i < args.length; i++) args[i-1] = args[i];
+		}
+
 		try {
 			masterHost = args[0];
 			masterPort = Integer.parseInt(args[1]);
@@ -42,7 +49,9 @@ public class Client implements Runnable {
 			sockets[i] = new DatagramSocket();
 		}
 
-		cgui = new ClientGui(this);
+		if (!nogui) {
+			cgui = new ClientGui(this);
+		}
 		// open tcp connection with master
 		System.out.println("opening tcp connection with " + masterHost + " on port " + masterPort);
 		Socket masterSocket = new Socket(masterHost, masterPort);
@@ -74,6 +83,11 @@ public class Client implements Runnable {
 		System.out.println("close tcp connection");
 		// close tcp connection
 		masterSocket.close();
+
+		if (nogui) {
+			// go automatically
+			run();
+		}
 	}
 
 	void setGrid(boolean[][] nGrid) {
@@ -159,9 +173,9 @@ public class Client implements Runnable {
 			firstPacket = false;
 			
 			updateNeighborCells(received);
-			// System.out.println(grid.toString());
+			if (nogui) System.out.println(grid.toString());
 			grid.tick();
-			cgui.update(grid.getGrid());
+			if (!nogui) cgui.update(grid.getGrid());
 			// wait
 			while(System.currentTimeMillis() - millisStart < TIMEOUT/2) {}
 			millisStart = System.currentTimeMillis();
